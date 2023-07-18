@@ -1,0 +1,35 @@
++SingularityImage = "osdf:///ospool/ap20/data/chriscox/containers/R4_0_1-boot.sif"
+
+x = $(Process) + 1
+num_item_id = $INT(x,%d)
+num_item_id_zp = $INT(x,%03d)
+
+o_glm = $(num_item_id_zp)_glm.rds
+o_bs = $(num_item_id_zp)_bs.rds
+o_bs_ci = $(num_item_id_zp)_bs_ci.rds
+
+r_glm = results/glm/$(num_item_id_zp).rds
+r_bs = results/bs/$(num_item_id_zp).rds
+r_bs_ci = results/bs_ci/$(num_item_id_zp).rds
+
+asd_na_data = asd_na-osg-2023_06_30.rds
+
+executable = bootstrap_osg.sh
+arguments = $(num_item_id) 10000 $(asd_na_data)
+
+log    = log/log.$(Cluster).$(Process)
+error  = log/err.$(Cluster).$(Process)
+output = log/out.$(Cluster).$(Process)
+
++JobDurationCategory = "Medium"
+
+transfer_input_files = bootstrap_osg.R, data/$(asd_na_data)
+
+transfer_output_files = $(o_glm), $(o_bs), $(o_bs_ci)
+transfer_output_remaps = "$(o_glm) =$(r_glm); $(o_bs) =$(r_bs); $(o_bs_ci) =$(r_bs_ci)"
+
+request_cpus   = 1
+request_memory = 4GB
+request_disk   = 12GB
+
+queue 680
