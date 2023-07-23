@@ -178,3 +178,11 @@ ggsave("vsoa_diff_categories_pcat.pdf", plt_pcat, width = 4, height = 4, units =
 ggsave("vsoa_diff_categories_pdiff.pdf", plt_pdiff, width = 4, height = 4, units = "in", dpi = 300)
 ggsave("vsoa_diff_categories_ndiff.pdf", plt_ndiff, width = 4, height = 4, units = "in", dpi = 300)
 
+
+dplot_ns_lm <- dplot_ns %>%
+    filter(!is.na(vid), vsoa_non > 0, vsoa_aut > 0, vsoa_non < 680, vsoa_aut < 680)
+
+
+mod <- lm(diff ~ clust + indegree + aspl, data = dplot_ns_lm)
+
+summary(mod)
