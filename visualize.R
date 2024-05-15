@@ -8,6 +8,20 @@ d <- readRDS("results/item_level_differences_bs_ci_bonf.rds")
 dsplit <- readRDS("results/split_item_level_differences_bs_ci_bonf.rds")
     # filter(na > 0, asd > 0, na < 680, asd < 680, ci_u < 500)
 
+dsplit <- map(dsplit, ~{
+    .x |>
+        mutate(
+            across(
+                c("asd", "na"),
+                list(adj = function(x) {
+                    if_else(x < 1, 1, if_else(x > 680, NA, x))
+                })
+            ),
+            diff_adj = asd_adj - na_adj
+        ) |>
+        arrange(desc(abs(diff_adj)))
+})
+
 dplot <- d %>%
     mutate(
         g = factor(
