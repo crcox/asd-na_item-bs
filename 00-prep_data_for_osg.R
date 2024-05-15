@@ -22,7 +22,7 @@ cdi <- ASD_NA_metadata_2023_match %>%
     pivot_wider(id_cols = c(group, subjectkey, interview_age), names_from = num_item_id, values_from = produced, values_fill = FALSE) %>%
     pivot_longer(cols = c(everything(), -group, -subjectkey, -interview_age), names_to = "num_item_id", values_to = "produced") %>%
     group_by(subjectkey) %>%
-    mutate(nproduced = sum(produced), num_item_id = readr::parse_number(num_item_id). subjectkey = as.character(subjectkey)) %>%
+    mutate(nproduced = sum(produced), num_item_id = readr::parse_number(num_item_id), subjectkey = as.character(subjectkey)) %>%
     ungroup()
 nrow(cdi)
 (194 + (194 * 5)) * 680
