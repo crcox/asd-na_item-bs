@@ -102,3 +102,56 @@ tmp |>
     ggplot(aes(x = nonautistic, y = autistic, color = word)) +
         geom_line() +
         scale_color_brewer(palette = "Set1", )
+
+
+# VSOA - AoA
+vsoa_aoa <- readRDS("data/vsoa_aoa-wordbank_engUS.rds") |>
+    tidyr::drop_na()
+
+vsoa_aoa_trimmed <- vsoa_aoa |>
+    mutate(
+        vsoa = if_else(vsoa <   1,  1, vsoa),
+        vsoa = if_else(vsoa > 680, NA, vsoa),
+        aoa  = if_else( aoa <  12, 12,  aoa),
+        aoa  = if_else( aoa >  30, NA,  aoa)
+    ) |>
+    drop_na()
+
+vsoa_aoa_trimmed_wrank <- list(
+    orig = vsoa_aoa_trimmed,
+    rank = mutate(vsoa_aoa_trimmed, across(c(aoa, vsoa), rank))
+) |>
+    list_rbind(names_to = "scale") |>
+    mutate(scale = factor(scale, levels = c("orig", "rank"), labels = c("original scale", "rank scale")))
+
+map_dbl(c("pearson" = "pearson", "spearman" = "spearman", "kendall" = "kendall"), function(df, method) {
+    cor(vsoa_aoa$aoa, vsoa_aoa$vsoa, method = method)
+}, df = vsoa_aoa)
+
+map_dbl(c("pearson" = "pearson", "spearman" = "spearman", "kendall" = "kendall"), function(df, method) {
+    cor(df$aoa, df$vsoa, method = method)
+}, df = vsoa_aoa_trimmed)
+
+ggplot(vsoa_aoa_trimmed, aes(x = aoa, y = vsoa)) +
+    geom_point() +
+    geom_smooth(method = "lm")
+
+p_vsoa_aoa <- ggplot(vsoa_aoa_trimmed_wrank, aes(x = aoa, y = vsoa)) +
+    geom_point() +
+    geom_smooth(method = "lm") +
+    facet_wrap(~scale, scales = "free_x") +
+    theme_bw(base_size = 32) +
+    theme(panel.grid.minor = element_blank())
+
+# A0: 1189 x 841 mm
+A0 <- list(width = 1189, height = 841)
+
+(0.38 * A0$width) * .9
+
+ggsave(
+    "vsoa_aoa.pdf",
+    plot = p_vsoa_aoa,
+    width = A0$width * .26,
+    height= A0$width * .16,
+    unit = "mm"
+)
