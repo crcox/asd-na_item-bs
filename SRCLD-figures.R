@@ -85,9 +85,9 @@ p_pcurves <- list(
             names_to = "group",
             values_to = "probability"
         ) |>
-        filter(earlier_by == "autistic") |>
+        filter(earlier_by == "nonautistic") |>
         ggplot(aes(x = vocab_size, y = probability, color = word, linetype = group)) +
-            geom_line(show.legend = TRUE) +
+            geom_line(show.legend = FALSE) +
             scale_color_brewer(palette = "Set2"),
     tmp |>
         pivot_longer(
@@ -95,20 +95,20 @@ p_pcurves <- list(
             names_to = "group",
             values_to = "probability"
         ) |>
-        filter(earlier_by == "nonautistic") |>
+        filter(earlier_by == "autistic") |>
         ggplot(aes(x = vocab_size, y = probability, color = word, linetype = group)) +
-            geom_line(show.legend = TRUE) +
+            geom_line(show.legend = FALSE) +
             scale_color_brewer(palette = "Set1"),
     tmp |>
         filter(earlier_by == "nonautistic") |>
         ggplot(aes(x = vocab_size, y = nonautistic - autistic, color = word)) +
-            geom_line(show.legend = TRUE) +
+            geom_line(show.legend = FALSE) +
             ylim(c(-.06, 1)) +
             scale_color_brewer(palette = "Set2"),
     tmp |>
         filter(earlier_by == "autistic") |>
         ggplot(aes(x = vocab_size, y = autistic - nonautistic, color = word)) +
-            geom_line(show.legend = TRUE) +
+            geom_line(show.legend = FALSE) +
             ylim(c(-.06, 1)) +
             scale_color_brewer(palette = "Set1")
 )
@@ -127,19 +127,15 @@ p_pcurves <- map(p_pcurves, ~{
 p_pcurves_multi <- ggarrange(plotlist = p_pcurves, ncol = 2, nrow = 2)
 
 ggsave(
-    "aut-na_prob_curves.pdf",
+    "aut-na_prob_curves_fix.pdf",
     plot = p_pcurves_multi,
     width = 309.03,
     height = 240,
     unit = "mm"
 )
-cor_methods <- c("pearson", "spearman", "kendall")
-names(cor_methods) <- cor_methods
-map_dbl(cor_methods, function(df, method) {
-    cor(df$vsoa_aut, df$vsoa_na, method = method)
-}, df = d_trim)
 
 
+# VSOA Autistic vs Non-autistic ----
 d <- readRDS("results/item_level_differences_bs_ci_bonf.rds")
 d_trim <- d |>
     rename(vsoa_na = na, vsoa_aut = asd) |>
@@ -160,6 +156,12 @@ d_trim_wrank <- list(
         )
 ) |>
     list_rbind(names_to = "scale")
+
+cor_methods <- c("pearson", "spearman", "kendall")
+names(cor_methods) <- cor_methods
+map_dbl(cor_methods, function(df, method) {
+    cor(df$vsoa_aut, df$vsoa_na, method = method)
+}, df = d_trim)
 
 
 p_vsoa_aut_na <- ggplot(d_trim_wrank, aes(x = vsoa_na, y = vsoa_aut)) +
@@ -190,7 +192,7 @@ tmp |>
         scale_color_brewer(palette = "Set1", )
 
 
-# VSOA - AoA
+# VSOA - AoA ----
 vsoa_aoa <- readRDS("data/vsoa_aoa-wordbank_engUS.rds") |>
     tidyr::drop_na()
 
@@ -213,10 +215,6 @@ vsoa_aoa_trimmed_wrank <- list(
 map_dbl(c("pearson" = "pearson", "spearman" = "spearman", "kendall" = "kendall"), function(df, method) {
     cor(vsoa_aoa$aoa, vsoa_aoa$vsoa, method = method)
 }, df = vsoa_aoa)
-
-map_dbl(c("pearson" = "pearson", "spearman" = "spearman", "kendall" = "kendall"), function(df, method) {
-    cor(df$aoa, df$vsoa, method = method)
-}, df = vsoa_aoa_trimmed)
 
 ggplot(vsoa_aoa_trimmed, aes(x = aoa, y = vsoa)) +
     geom_point() +
