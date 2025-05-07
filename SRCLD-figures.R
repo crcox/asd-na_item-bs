@@ -5,11 +5,22 @@ library(ggplot2)
 library(ggpubr)
 
 meta <- readRDS("data/cdi-metadata.rds")
-word_models <- map(seq_len(680), ~{
-    readRDS(file.path("results", "ci_bonf", "glm", sprintf("%03d.rds", .x)))
-})
+read_vsoa_bsci <- function(num_item_id) {
+    readRDS(file.path("results-20250507", "ci_bonf", "glm", sprintf("%03d.rds", num_item_id)))
+}
+word_models <- map(seq_len(680), possibly(read_vsoa_bsci, otherwise = NA), .progress = TRUE)
+
+missing_words <- tibble(
+    num_item_id = which(map_lgl(word_models, ~ {is.na(.x)[1]}))
+) |> left_join(select(meta, num_item_id, word, by = "num_item_id"))
+
+modeled_words <- tibble(
+    num_item_id = which(map_lgl(word_models, ~ {!is.na(.x)[1]}))
+) |> left_join(select(meta, num_item_id, word, by = "num_item_id"))
 
 names(word_models) <- meta$word
+
+word_models <- word_models[modeled_words$num_item_id]
 
 dnew <- expand_grid(
     group = factor(1:2L, levels = 1:2L, c("NA", "ASD")),
@@ -23,7 +34,7 @@ prob_list <- map(word_models, ~{
 
 probs <- array(
     do.call(rbind, prob_list),
-    dim = c(680, 680, 2),
+    dim = c(length(word_models), 680, 2),
     dimnames = list(
         "word" = names(word_models),
         "vocab_size" = NULL,
@@ -33,7 +44,7 @@ probs <- array(
 
 probs_df <- expand_grid(
     vocab_size = 1:680L,
-    word = factor(1:680L, labels = names(word_models))
+    word = factor(seq_along(word_models), labels = names(word_models))
 ) |>
     mutate(
         autistic = c(probs[, , 2]),
@@ -127,7 +138,7 @@ p_pcurves <- map(p_pcurves, ~{
 p_pcurves_multi <- ggarrange(plotlist = p_pcurves, ncol = 2, nrow = 2)
 
 ggsave(
-    "aut-na_prob_curves_fix.pdf",
+    "aut-na_prob_curves_fix-20250507.pdf",
     plot = p_pcurves_multi,
     width = 309.03,
     height = 240,

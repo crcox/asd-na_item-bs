@@ -5,9 +5,10 @@ library(ggplot2)
 library(boot)
 
 meta <- readRDS("data/cdi-metadata.rds")
-x <- map_df(1:680, function(i) {
-    p <- file.path("results", "ci_bonf", "bs_ci", sprintf("%03d.rds", i))
-    x <- readRDS(p)
+x <- map(1:680, function(i) {
+    p <- file.path("results-20250507", "ci_bonf", "bs_ci", sprintf("%03d.rds", i))
+    x <- tryCatch(readRDS(p), error = function(e) NA)
+    if (is.na(x[1])) return(NA)
     d <- expand_grid(
         ci_type = c("basic", "bca", "percentile"),
         variable = c("ASD-NA", "NA", "ASD")
@@ -26,7 +27,21 @@ x <- map_df(1:680, function(i) {
     d$na <- x[[2]]$t0
     d$asd <- x[[3]]$t0
     return(d)
-}, .id = "num_item_id")
+}, .progress = TRUE)
+
+missing_words <- tibble(
+    num_item_id = which(map_lgl(x, ~ {is.na(.x)[1]}))
+) |> left_join(select(meta, num_item_id, word), by = "num_item_id")
+
+modeled_words <- tibble(
+    num_item_id = which(map_lgl(x, ~ {!is.na(.x)[1]}))
+) |> left_join(select(meta, num_item_id, word), by = "num_item_id")
+
+names(x) <- meta$word
+x <- x[modeled_words$num_item_id] |>
+    bind_rows(.id = "word") |>
+    left_join(select(meta, num_item_id, word), by = "word") |>
+    relocate(num_item_id)
 
 d <- x %>%
     filter(variable == "ASD-NA", ci_type == "bca") %>%
@@ -42,7 +57,7 @@ ggplot(dplot, aes(x = fct, y = diff)) +
     geom_pointrange(aes(ymin = ci_l, ymax = ci_u)) +
     geom_hline(yintercept = 0)
 
-ggsave("summary_ci_bonf.png", width = 7, height = 5, dpi = 300)
+ggsave("summary_ci_bonf-20250507.png", width = 7, height = 5, dpi = 300)
 
 different <- d %>%
     filter(sign(ci_l) == sign(ci_u)) %>%
@@ -53,5 +68,10 @@ different[[2]] <- arrange(different[[2]], desc(diff))
 
 names(different) <- c("later_NA", "later_ASD")
 
-saveRDS(different, file = "split_item_level_differences_bs_ci_bonf.rds")
-saveRDS(d, file = "item_level_differences_bs_ci_bonf.rds")
+saveRDS(different, file = "split_item_level_differences_bs_ci_bonf-20250507.rds")
+saveRDS(d, file = "item_level_differences_bs_ci_bonf-20250507.rds")
+
+readr::write_csv(d, file = "item_level_differences_bs_ci_bonf-20250507.csv")
+
+dold <- readRDS("results/item_level_differences_bs_ci_bonf.rds")
+readr::write_csv(dold, file = "item_level_differences_bs_ci_bonf.csv")
