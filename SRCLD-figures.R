@@ -1,14 +1,28 @@
 library(dplyr)
 library(purrr)
+library(readr)
 library(tidyr)
 library(ggplot2)
 library(ggpubr)
 
-meta <- readRDS("data/cdi-metadata.rds")
-read_vsoa_bsci <- function(num_item_id) {
-    readRDS(file.path("results-20250507", "ci_bonf", "glm", sprintf("%03d.rds", num_item_id)))
+meta <- readRDS("data/cdi-metadata.rds") |>
+    as_tibble()
+items <- read_csv(
+    "./item-id-label.csv",
+    col_names = c("num_item_id", "label"),
+    col_types = list(col_integer(), col_character())
+) |>
+    mutate(clust_id = 29354226, proc_id = num_item_id - 1) |>
+    relocate(clust_id, proc_id)
+read_vsoa_glm <- function(clust_id, proc_id, num_item_id, label) {
+    readRDS(file.path(
+        "results-20250507",
+        "ci_bonf",
+        "glm",
+        sprintf("%d-%d-%03d-%s.rds", clust_id, proc_id, num_item_id, label)
+    ))
 }
-word_models <- map(seq_len(680), possibly(read_vsoa_bsci, otherwise = NA), .progress = TRUE)
+word_models <- pmap(items, read_vsoa_glm, .progress = TRUE)
 
 missing_words <- tibble(
     num_item_id = which(map_lgl(word_models, ~ {is.na(.x)[1]}))
@@ -16,7 +30,7 @@ missing_words <- tibble(
 
 modeled_words <- tibble(
     num_item_id = which(map_lgl(word_models, ~ {!is.na(.x)[1]}))
-) |> left_join(select(meta, num_item_id, word, by = "num_item_id"))
+) |> left_join(select(meta, num_item_id, word), by = "num_item_id")
 
 names(word_models) <- meta$word
 

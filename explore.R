@@ -5,10 +5,24 @@ library(ggplot2)
 library(boot)
 
 meta <- readRDS("data/cdi-metadata.rds")
-x <- map(1:680, function(i) {
-    p <- file.path("results-20250507", "ci_bonf", "bs_ci", sprintf("%03d.rds", i))
-    x <- tryCatch(readRDS(p), error = function(e) NA)
-    if (is.na(x[1])) return(NA)
+items <- read_csv(
+    "./item-id-label.csv",
+    col_names = c("num_item_id", "label"),
+    col_types = list(col_integer(), col_character())
+) |>
+    mutate(clust_id = 29354226, proc_id = num_item_id - 1) |>
+    relocate(clust_id, proc_id)
+read_vsoa_bsci <- function(clust_id, proc_id, num_item_id, label) {
+    readRDS(file.path(
+        "results-20250507",
+        "ci_bonf",
+        "bs_ci",
+        sprintf("%d-%d-%03d-%s.rds", clust_id, proc_id, num_item_id, label)
+    ))
+}
+word_cis <- pmap(items, read_vsoa_bsci, .progress = TRUE)
+
+x <- map(word_cis, function(x) {
     d <- expand_grid(
         ci_type = c("basic", "bca", "percentile"),
         variable = c("ASD-NA", "NA", "ASD")
