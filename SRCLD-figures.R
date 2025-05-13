@@ -5,6 +5,12 @@ library(tidyr)
 library(ggplot2)
 library(ggpubr)
 
+# Note: We are aware of 65 autistic children for whom data was not
+# collected/reported for the first 12 items on the CDI.
+#  * Models/VSOAs associated with cluster ID 29354226 included these 65 children
+#    when modeling these 12 items, which skewed the results.
+#  * Models/VSOAs were rerun for these 12 items, excluding these 65 children.
+#    These refit data are associated with cluster ID 29679346.
 meta <- readRDS("data/cdi-metadata.rds") |>
     as_tibble()
 items <- read_csv(
@@ -12,7 +18,10 @@ items <- read_csv(
     col_names = c("num_item_id", "label"),
     col_types = list(col_integer(), col_character())
 ) |>
-    mutate(clust_id = 29354226, proc_id = num_item_id - 1) |>
+    mutate(
+        clust_id = if_else(num_item_id > 12, 29354226, 29679346), # replace data for first 12 items
+        proc_id = num_item_id - 1
+    ) |>
     relocate(clust_id, proc_id)
 read_vsoa_glm <- function(clust_id, proc_id, num_item_id, label) {
     readRDS(file.path(
