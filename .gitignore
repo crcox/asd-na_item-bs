@@ -1,6 +1,6 @@
-data
-results
-figures
-log
+data/
+results*/
+figures/
+log/
 .Rproj.user
 .Rhistory

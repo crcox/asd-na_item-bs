@@ -6,37 +6,151 @@ editor: visual
 ---
 
 ## Load data
+
 ```{r load data}
+library(dplyr)
+library(purrr)
+library(tidyr)
+library(knitr)
+library(kableExtra)
+library(ggplot2)
+
 d_meta <- readRDS("data/cdi-metadata.rds")
 d_cdi <- readRDS("data/asd_na-osg-2025-05-07.rds")
+d_vsoa <- readRDS("data/vsoa-autistic-nonautistic.rds")
+d_vsoa_diff <- readRDS("data/vsoa-autistic-nonautistic-diff.rds")
 d_ppt <- d_cdi |>
     select(subjectkey, nproduced, sex, group, interview_age) |>
     distinct()
+d_aoa <- readRDS("data/CDI_English (American)_WS_14May2025_AoA.rds")
+d_vsoa_aoa <- left_join(
+    d_vsoa |> filter(group != "ASD-NA"),
+    d_aoa |> select(num_item_id, aoa = aoa_glm), by = "num_item_id"
+) |>
+    mutate(
+        group = factor(group, c("ASD", "NA"), c("autistic", "not aut."))
+    ) |>
+    relocate(aoa, .before = vsoa)
+d_vsoa_aoa_trimmed <- d_vsoa_aoa |>
+    mutate(
+        vsoa = if_else(vsoa <   1,  1, vsoa),
+        vsoa = if_else(vsoa > 680, NA, vsoa),
+        aoa  = if_else( aoa <  12, 12,  aoa),
+        aoa  = if_else( aoa >  30, NA,  aoa)
+    ) |>
+    drop_na()
+
 ```
 
-## Participant Characteristics
+## Participant Characteristics {.smaller}
 
 ```{r participant characteristics}
 d_ppt |>
+    mutate(
+        group = factor(group, c("ASD", "NA"), c("autistic", "not aut."))
+    ) |>
     group_by(group) |>
     summarize(
         across(
             c(nproduced, interview_age),
             list(mean = mean, median = median, sd = sd)
         )
-    )
+    ) |> 
+    kable(col.names = c("group", "mean", "median", "SD", "mean", "median", "SD"), digits = 3) |>
+    kableExtra::add_header_above(header = c(" " = 1, "Productive Vocabulary" = 3, "Interview Age" = 3))
+
+d_ppt |>
+    mutate(
+        group = factor(group, c("ASD", "NA"), c("autistic", "not aut.")),
+        sex = factor(sex, c("M", "F"), c("male", "female"))
+    ) |>
+    count(group, sex) |>
+    pivot_wider(id_cols = group, names_from = sex, values_from = n) |>
+    mutate(total = male + female, `ratio (M:F)` = male / female) |>
+    kable(digits = 3)
 ```
-## Bullets
 
-When you click the **Render** button a document will be generated that includes:
+## VSOA correlation with AoA (raw) {.smaller}
 
--   Content authored with markdown
--   Output from executable code
-
-## Code
-
-When you click the **Render** button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:
-
-```{r}
-1 + 1
+```{r vsoa correlation with aoa}
+map(
+    c("pearson" = "pearson", "spearman" = "spearman", "kendall" = "kendall"),
+    function(df, method) {
+        df |>
+            group_by(group) |>
+            summarize(r = cor(aoa, vsoa, method = method, use = "complete.obs"))
+    },
+    df = d_vsoa_aoa
+) |>
+    list_rbind(names_to = "method") |>
+    pivot_wider(id_cols = group, names_from = method, values_from = r) |>
+    kable(digits = 3)
+ggplot(d_vsoa_aoa, aes(x = aoa, y = vsoa)) +
+    geom_point() +
+    geom_smooth(method = lm) +
+    facet_wrap(~group) +
+    theme_bw(base_size = 18)
 ```
+
+## VSOA correlation with AoA (trimmed)  {.smaller}
+
+```{r vsoa correlation with aoa trimmed}
+map(
+    c("pearson" = "pearson", "spearman" = "spearman", "kendall" = "kendall"),
+    function(df, method) {
+        df |>
+            group_by(group) |>
+            summarize(r = cor(aoa, vsoa, method = method, use = "complete.obs"))
+    },
+    df = d_vsoa_aoa_trimmed
+) |>
+    list_rbind(names_to = "method") |>
+    pivot_wider(id_cols = group, names_from = method, values_from = r) |>
+    kable(digits = 3)
+ggplot(d_vsoa_aoa_trimmed, aes(x = aoa, y = vsoa)) +
+    geom_point() +
+    geom_smooth(method = lm) +
+    facet_wrap(~group) +
+    theme_bw(base_size = 18)
+```
+
+## How many words have extreme VSOA?
+
+* Low: $\textrm{VSOA} \le 1$
+* High: $\textrm{VSOA} \ge \max \textrm{vocab size}$
+
+```{r extreme vsoa}
+d_vsoa |>
+    filter(group != "ASD-NA") |>
+    mutate(
+        extreme = if_else(vsoa <= 1, 1, if_else(vsoa >= max(d_ppt$nproduced), 2, NA)),
+        extreme = factor(extreme, 1:2, c("low", "high"))
+    ) |>
+    drop_na(extreme) |>
+    count(group, extreme) |>
+    pivot_wider(id_cols = group, names_from = extreme, values_from = n) |>
+    kable()
+```
+
+
+## Words with largest VSOA differences  {.smaller}
+
+### Autistic children learn earlier
+```{r autistic children learn earlier}
+d_vsoa_diff |>
+    select(-starts_with("ci_")) |>
+    slice_min(vsoa_diff, n = 7) |>
+    kable(digits = 1)
+```
+
+
+## Words with largest VSOA differences  {.smaller}
+
+### Autistic children learn later
+```{r autistic children learn later}
+d_vsoa_diff |>
+    select(-starts_with("ci_")) |>
+    slice_max(vsoa_diff, n = 7) |>
+    kable(digits = 1)
+```
+
