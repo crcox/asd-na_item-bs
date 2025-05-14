@@ -42,11 +42,6 @@ x <- map(word_cis, function(x) {
         ci_type = c("basic", "bca", "percentile"),
         variable = c("ASD-NA", "NA", "ASD")
     )
-    d$se <- c(
-        map_dbl(x, function(ci) {sd(ci$R)}),
-        map_dbl(x, function(ci) {ci$bca[4]}),
-        map_dbl(x, function(ci) {ci$perc[4]})
-    )
     d$ci_l <- c(
         map_dbl(x, function(ci) {ci$basic[4]}),
         map_dbl(x, function(ci) {ci$bca[4]}),
@@ -72,7 +67,31 @@ modeled_words <- tibble(
 ) |> left_join(select(meta, num_item_id, word), by = "num_item_id")
 
 names(x) <- meta$word
-x <- x[modeled_words$num_item_id] |>
+df_vsoa <- x[modeled_words$num_item_id] |>
     bind_rows(.id = "word") |>
     left_join(select(meta, num_item_id, word), by = "word") |>
-    relocate(num_item_id)
+    relocate(num_item_id) |>
+    mutate(
+        num_item_id = as.integer(num_item_id),
+        word = factor(num_item_id, modeled_words$num_item_id, modeled_words$word),
+        ci_type = factor(ci_type, c("basic", "bca", "percentile")),
+        group = factor(variable, c("ASD-NA", "NA", "ASD"))
+    ) |>
+    select(-na, -asd, -variable) |>
+    rename(vsoa = diff) |>
+    relocate(group, vsoa, .after = word) |>
+    arrange(num_item_id, group, ci_type) |>
+    filter(ci_type == "bca")
+
+df_vsoa_diff <- df_vsoa |>
+    pivot_wider(
+        id_cols = c(num_item_id, word, ci_type),
+        names_from = group,
+        values_from = c(vsoa, ci_l, ci_u)
+    ) |>
+    rename_with(~ sub("ASD-NA", "diff", .x), ends_with("ASD-NA")) |>
+    select(-ci_l_ASD, -ci_u_ASD, -ci_l_NA, -ci_u_NA)
+
+
+saveRDS(df_vsoa, "data/vsoa-autistic-nonautistic.rds")
+saveRDS(df_vsoa_diff, "data/vsoa-autistic-nonautistic-diff.rds")

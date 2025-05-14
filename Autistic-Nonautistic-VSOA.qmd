@@ -1,0 +1,42 @@
+---
+title: "Autistic vs Non-autistic VSOA"
+author: "Chris Cox"
+format: revealjs
+editor: visual
+---
+
+## Load data
+```{r load data}
+d_meta <- readRDS("data/cdi-metadata.rds")
+d_cdi <- readRDS("data/asd_na-osg-2025-05-07.rds")
+d_ppt <- d_cdi |>
+    select(subjectkey, nproduced, sex, group, interview_age) |>
+    distinct()
+```
+
+## Participant Characteristics
+
+```{r participant characteristics}
+d_ppt |>
+    group_by(group) |>
+    summarize(
+        across(
+            c(nproduced, interview_age),
+            list(mean = mean, median = median, sd = sd)
+        )
+    )
+```
+## Bullets
+
+When you click the **Render** button a document will be generated that includes:
+
+-   Content authored with markdown
+-   Output from executable code
+
+## Code
+
+When you click the **Render** button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
