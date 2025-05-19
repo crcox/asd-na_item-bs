@@ -7,6 +7,17 @@ library(boot)
 
 meta <- readRDS("data/cdi-metadata.rds")
 
+# !!! CRITICAL NOTE (16 May 2025) !!!
+# The data modeled to obtain VSOA estimates used numeric item IDs derived from
+# NDAR data, while the lab convention is to use the WordBank numeric item ID.
+# Special care is needed when reading from `results-20250507`.
+wb_to_ndar <- readRDS("data/wb-to-ndar.rds")
+id_key <- bind_rows(
+    "ASD" = select(wb_to_ndar, num_item_id = ndar_item_id, word),
+    "NA" = select(wb_to_ndar, num_item_id = wb_item_id, word),
+    .id = "group"
+)
+
 # Note: We are aware of 65 autistic children for whom data was not
 # collected/reported for the first 12 items on the CDI.
 #  * Models/VSOAs associated with cluster ID 29354226 included these 65 children
@@ -15,9 +26,10 @@ meta <- readRDS("data/cdi-metadata.rds")
 #    These refit data are associated with cluster ID 29679346.
 models_to_load <- read_csv(
     "./item-id-label.csv",
-    col_names = c("num_item_id", "label"),
+    col_names = c("num_item_id", "incorrect_label"),
     col_types = list(col_integer(), col_character())
 ) |>
+    left_join(wb_to_ndar) |>
     mutate(
         clust_id = if_else(num_item_id > 12, 29354226, 29679346), # replace data for first 12 items
         proc_id = num_item_id - 1
@@ -27,15 +39,19 @@ models_to_load <- read_csv(
 # Again, note that each file is distinguished by a cluster ID and a process ID.
 # This, coupled with appropriate documentation, provides information about when
 # and under conditions data were generated.
-read_vsoa_bsci <- function(clust_id, proc_id, num_item_id, label) {
+read_vsoa_bsci <- function(clust_id, proc_id, num_item_id, incorrect_label) {
     readRDS(file.path(
         "results-20250507",
         "ci_bonf",
         "bs_ci",
-        sprintf("%d-%d-%03d-%s.rds", clust_id, proc_id, num_item_id, label)
+        sprintf("%d-%d-%03d-%s.rds", clust_id, proc_id, num_item_id, incorrect_label)
     ))
 }
-word_cis <- pmap(models_to_load, read_vsoa_bsci, .progress = TRUE)
+word_cis <- pmap(
+    models_to_load |> select(-word, -wb_item_id),
+    read_vsoa_bsci,
+    .progress = TRUE
+)
 
 x <- map(word_cis, function(x) {
     d <- expand_grid(
@@ -58,22 +74,29 @@ x <- map(word_cis, function(x) {
     return(d)
 }, .progress = TRUE)
 
-missing_words <- tibble(
-    num_item_id = which(map_lgl(x, ~ {is.na(.x)[1]}))
-) |> left_join(select(meta, num_item_id, word), by = "num_item_id")
+#missing_words <- tibble(
+#    num_item_id = which(map_lgl(x, ~ {is.na(.x)[1]}))
+#) |> left_join(select(id_key, num_item_id, word), by = c("group", "num_item_id"))
+#
+#modeled_words <- tibble(
+#    num_item_id = which(map_lgl(x, ~ {!is.na(.x)[1]}))
+#) |> left_join(select(id_key, num_item_id, word), by = c("group", "ndar_item_id"))
 
-modeled_words <- tibble(
-    num_item_id = which(map_lgl(x, ~ {!is.na(.x)[1]}))
-) |> left_join(select(meta, num_item_id, word), by = "num_item_id")
 
-names(x) <- meta$word
-df_vsoa <- x[modeled_words$num_item_id] |>
+names(x) <- wb_to_ndar |>
+    arrange(ndar_item_id) |>
+    pull(word)
+
+# In this pipeline, we make the switch from NDAR item IDs to WB item IDs being
+# the principle index. Note the `wb_item_id` becomes `num_item_id`.
+df_vsoa <- x[modeled_words$ndar_item_id] |>
     bind_rows(.id = "word") |>
-    left_join(select(meta, num_item_id, word), by = "word") |>
+    left_join(wb_to_ndar, by = "word") |>
+    rename(num_item_id = wb_item_id) |>
     relocate(num_item_id) |>
     mutate(
         num_item_id = as.integer(num_item_id),
-        word = factor(num_item_id, modeled_words$num_item_id, modeled_words$word),
+        word = factor(num_item_id, modeled_words$wb_item_id, modeled_words$word),
         ci_type = factor(ci_type, c("basic", "bca", "percentile")),
         group = factor(variable, c("ASD-NA", "NA", "ASD"))
     ) |>
@@ -93,5 +116,7 @@ df_vsoa_diff <- df_vsoa |>
     select(-ci_l_ASD, -ci_u_ASD, -ci_l_NA, -ci_u_NA)
 
 
-saveRDS(df_vsoa, "data/vsoa-autistic-nonautistic.rds")
-saveRDS(df_vsoa_diff, "data/vsoa-autistic-nonautistic-diff.rds")
+saveRDS(df_vsoa, "data/vsoa-autistic-nonautistic-ndar-id-fix.rds")
+saveRDS(df_vsoa_diff, "data/vsoa-autistic-nonautistic-diff-ndar-id-fix.rds")
+
+write_csv(df_vsoa_diff, file = "data/vsoa-autistic-nonautistic-diff-ndar-id-fix.csv")

@@ -15,10 +15,37 @@ library(knitr)
 library(kableExtra)
 library(ggplot2)
 
+new_guids <- readRDS("data/autistic-guis-added-20250507.rds")
 d_meta <- readRDS("data/cdi-metadata.rds")
-d_cdi <- readRDS("data/asd_na-osg-2025-05-07.rds")
+d_cdi <- readRDS("data/asd_na-osg-2025-05-07.rds") |>
+    mutate(
+        dataset = if_else(subjectkey %in% new_guids, 2, 1),
+        dataset = factor(dataset, 1:2, c("old", "new"))
+    ) |>
+    left_join(
+        d_meta |> select(num_item_id, word)
+    )
 d_vsoa <- readRDS("data/vsoa-autistic-nonautistic.rds")
 d_vsoa_diff <- readRDS("data/vsoa-autistic-nonautistic-diff.rds")
+d_vsoa_diff_trimmed <- d_vsoa_diff |>
+    mutate(
+        vsoa_NA = if_else(vsoa_NA <   1,  1, vsoa_NA),
+        vsoa_NA = if_else(vsoa_NA > 680, NA, vsoa_NA),
+        vsoa_ASD = if_else(vsoa_ASD <   1,  1, vsoa_ASD),
+        vsoa_ASD = if_else(vsoa_ASD > 680, NA, vsoa_ASD),
+        vsoa_diff = vsoa_ASD - vsoa_NA
+    ) |>
+    drop_na()
+d_vsoa_diff_old <- readRDS("data/vsoa-autistic-nonautistic-diff-old.rds")
+d_vsoa_diff_old_trimmed <- d_vsoa_diff_old |>
+    mutate(
+        vsoa_NA = if_else(vsoa_NA <   1,  1, vsoa_NA),
+        vsoa_NA = if_else(vsoa_NA > 680, NA, vsoa_NA),
+        vsoa_ASD = if_else(vsoa_ASD <   1,  1, vsoa_ASD),
+        vsoa_ASD = if_else(vsoa_ASD > 680, NA, vsoa_ASD),
+        vsoa_diff = vsoa_ASD - vsoa_NA
+    ) |>
+    drop_na()
 d_ppt <- d_cdi |>
     select(subjectkey, nproduced, sex, group, interview_age) |>
     distinct()
@@ -72,6 +99,12 @@ d_ppt |>
 
 ## VSOA correlation with AoA (raw) {.smaller}
 
+Number of words contributing to correlations:
+
+```{r number of words in correlation analysis}
+d_vsoa_aoa |> drop_na() |> count(group) |> kable()
+```
+
 ```{r vsoa correlation with aoa}
 map(
     c("pearson" = "pearson", "spearman" = "spearman", "kendall" = "kendall"),
@@ -93,6 +126,10 @@ ggplot(d_vsoa_aoa, aes(x = aoa, y = vsoa)) +
 ```
 
 ## VSOA correlation with AoA (trimmed)  {.smaller}
+
+```{r number of words in correlation analysis trimed}
+d_vsoa_aoa_trimmed |> drop_na() |> count(group) |> kable()
+```
 
 ```{r vsoa correlation with aoa trimmed}
 map(
@@ -132,6 +169,135 @@ d_vsoa |>
     kable()
 ```
 
+## Least-produced words (for autistic only; counts) {.scrollable}
+
+```{r least produced words}
+d_cdi_cumulative <- bind_rows(
+    old = d_cdi |> filter(dataset == "old"),
+    new = d_cdi,
+    .id = "dataset_cumulative"
+)
+
+least_produced <- d_cdi_cumulative |>
+    group_by(dataset_cumulative, group, word) |>
+    summarize(n = sum(produced)) |>
+    group_by(dataset_cumulative, group) |>
+    slice_min(n, n=10)
+    
+least_produced_x <- d_cdi_cumulative |>
+    filter(word %in% least_produced$word) |>
+    group_by(dataset_cumulative, group, word) |>
+    summarize(n = sum(produced), p = n / n()) |>
+    mutate(
+        least_10_asd = word %in%
+            pull(filter(least_produced, group == "ASD", dataset_cumulative == "old"), word),
+        least_10_non = word %in%
+            pull(filter(least_produced, group == "NA", dataset_cumulative == "old"), word),
+        least_10_for = if_else(
+            least_10_asd & least_10_non,
+            "both",
+            if_else(
+                least_10_asd & !least_10_non,
+                "ASD",
+                "NA"
+            )
+        )
+    )
+
+least_produced_counts <- least_produced_x |>
+    pivot_wider(
+        id_cols = c(least_10_for, word),
+        names_from = c(dataset_cumulative, group),
+        values_from = n,
+        values_fill = 0
+    ) |>
+    select(-least_10_asd, -least_10_non) |>
+    relocate(least_10_for, new_ASD, old_ASD, new_NA, old_NA, .after = word)
+
+least_produced_proportions <- least_produced_x |>
+    pivot_wider(
+        id_cols = c(least_10_for, word),
+        names_from = c(dataset_cumulative, group),
+        values_from = p,
+        values_fill = 0
+    ) |>
+    select(-least_10_asd, -least_10_non) |>
+    relocate(least_10_for, new_ASD, old_ASD, new_NA, old_NA, .after = word)
+```
+
+
+```{r least produced words for ASD only counts}
+least_produced_counts |>
+    filter(least_10_for == "ASD") |>
+    select(-least_10_for) |>
+    kable(col.names = c("word", "Least 10 for", "New", "Old", "New", "Old"), digits = 2) |>
+    kableExtra::add_header_above(header = c(" " = 2, "Autistic" = 2, "Not Autistic" = 2))
+```
+
+
+## Least-produced words (for autistic only; proportions) {.scrollable}
+
+```{r least produced words p}
+least_produced_proportions |>
+    filter(least_10_for == "ASD") |>
+    select(-least_10_for) |>
+    relocate(new_ASD, old_ASD, new_NA, old_NA, .after = word) |>
+    kable(col.names = c("word", "New", "Old", "New", "Old"), digits = 2) |>
+    kableExtra::add_header_above(header = c(" " = 1, "Autistic" = 2, "Not Autistic" = 2))
+```
+
+
+
+## Least-produced words (for non-autistic only; counts) {.scrollable}
+
+```{r least produced words for NA only counts}
+least_produced_counts |>
+    filter(least_10_for == "NA") |>
+    select(-least_10_for) |>
+    kable(col.names = c("word", "Least 10 for", "New", "Old", "New", "Old"), digits = 2) |>
+    kableExtra::add_header_above(header = c(" " = 2, "Autistic" = 2, "Not Autistic" = 2))
+```
+
+
+## Least-produced words (for non-autistic only; proportions) {.scrollable}
+
+```{r least produced words for NA only proportions}
+least_produced_proportions |>
+    filter(least_10_for == "NA") |>
+    select(-least_10_for) |>
+    relocate(new_ASD, old_ASD, new_NA, old_NA, .after = word) |>
+    kable(col.names = c("word", "New", "Old", "New", "Old"), digits = 2) |>
+    kableExtra::add_header_above(header = c(" " = 1, "Autistic" = 2, "Not Autistic" = 2))
+```
+
+
+## Words with significantly different VSOA between groups
+
+### New VSOAs
+```{r significant differences new}
+d_vsoa_diff |>
+    mutate(
+        produced_earlier_by = if_else(sign(vsoa_diff) < 0, 1, 2) |>
+            factor(1:2, c("autistic", "not aut.")),
+        significant = sign(ci_u_diff) == sign(ci_l_diff)
+    ) |>
+    filter(significant) |>
+    count(produced_earlier_by) |>
+    kable()
+```
+
+### Old VSOAs
+```{r significant differences old}
+d_vsoa_diff_old |>
+    mutate(
+        produced_earlier_by = if_else(sign(vsoa_diff) < 0, 1, 2) |>
+            factor(1:2, c("autistic", "not aut.")),
+        significant = sign(ci_u_diff) == sign(ci_l_diff)
+    ) |>
+    filter(significant) |>
+    count(produced_earlier_by) |>
+    kable()
+```
 
 ## Words with largest VSOA differences  {.smaller}
 
@@ -154,3 +320,24 @@ d_vsoa_diff |>
     kable(digits = 1)
 ```
 
+
+## Words with largest VSOA differences (trimmed)  {.smaller}
+
+### Autistic children learn earlier
+```{r autistic children learn earlier trimmed}
+d_vsoa_diff_trimmed |>
+    select(-starts_with("ci_")) |>
+    slice_min(vsoa_diff, n = 7) |>
+    kable(digits = 0)
+```
+
+
+## Words with largest VSOA differences (trimmed) {.smaller}
+
+### Autistic children learn later
+```{r autistic children learn later trimmed}
+d_vsoa_diff_trimmed |>
+    select(-starts_with("ci_")) |>
+    slice_max(vsoa_diff, n = 7) |>
+    kable(digits = 0)
+```
