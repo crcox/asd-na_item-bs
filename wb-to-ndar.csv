@@ -1,0 +1,681 @@
+word,ndar_item_id,wb_item_id
+baa baa,1,1
+choo choo,2,2
+cockadoodledoo,3,3
+grrr,4,4
+meow,5,5
+moo,6,6
+ouch,7,7
+quack quack,8,8
+uh oh,9,9
+vroom,10,10
+woof woof,11,11
+yum yum,12,12
+alligator,13,13
+animal,14,14
+ant,15,15
+bear,16,16
+bee,17,17
+bird,18,18
+bug,19,19
+bunny,20,20
+butterfly,21,21
+cat,22,22
+chicken (animal),23,23
+cow,24,24
+deer,25,25
+dog,26,26
+donkey,27,27
+duck,28,28
+elephant,29,29
+fish (animal),30,30
+frog,31,31
+giraffe,32,32
+goose,33,33
+hen,34,34
+horse,35,35
+kitty,36,36
+lamb,37,37
+lion,38,38
+monkey,39,39
+moose,40,40
+mouse,41,41
+owl,42,42
+penguin,43,43
+pig,44,44
+pony,45,45
+puppy,46,46
+rooster,47,47
+sheep,48,48
+squirrel,49,49
+teddybear,50,50
+tiger,51,51
+turkey,52,52
+turtle,53,53
+wolf,54,54
+zebra,55,55
+airplane,56,56
+bicycle,57,57
+boat,58,58
+bus,59,59
+car,60,60
+firetruck,61,61
+helicopter,62,62
+motorcycle,63,63
+sled,64,64
+stroller,65,65
+tractor,66,66
+train,67,67
+tricycle,68,68
+truck,69,69
+ball,70,70
+balloon,71,71
+bat,72,72
+block,73,73
+book,74,74
+bubbles,75,75
+chalk,76,76
+crayon,77,77
+doll,78,78
+game,79,79
+glue,80,80
+pen,81,81
+pencil,82,82
+play dough,83,83
+present,84,84
+puzzle,85,85
+story,86,86
+toy (object),87,87
+apple,88,88
+applesauce,89,89
+banana,90,90
+beans,91,91
+bread,92,92
+butter,93,93
+cake,94,94
+candy,95,95
+carrots,96,96
+cereal,97,97
+cheerios,98,98
+cheese,99,99
+chicken (food),100,100
+chocolate,101,101
+coffee,102,102
+coke,103,103
+cookie,104,104
+corn,105,105
+cracker,106,106
+donut,107,107
+drink (beverage),108,108
+egg,109,109
+fish (food),110,110
+food,111,111
+french fries,112,112
+grapes,113,113
+green beans,114,114
+gum,115,115
+hamburger,116,116
+ice,117,117
+ice cream,118,118
+jello,119,119
+jelly,120,120
+juice,121,121
+lollipop,122,122
+meat,123,123
+melon,124,124
+milk,125,125
+muffin,126,126
+noodles,127,127
+nuts,128,128
+orange (food),129,129
+pancake,130,130
+peanut butter,131,132
+peas,132,131
+pickle,133,133
+pizza,134,134
+popcorn,135,135
+popsicle,136,136
+potato,137,138
+potato chip,138,137
+pretzel,139,139
+pudding,140,140
+pumpkin,141,141
+raisin,142,142
+salt,143,143
+sandwich,144,144
+sauce,145,145
+soda/pop,146,146
+soup,147,147
+spaghetti,148,148
+strawberry,149,149
+toast,150,150
+tuna,151,151
+vanilla,152,152
+vitamins,153,153
+water (beverage),154,154
+yogurt,155,155
+beads,156,156
+belt,157,157
+bib,158,158
+boots,159,159
+button,160,160
+coat,161,161
+diaper,162,162
+dress (object),163,163
+gloves,164,164
+hat,165,165
+jacket,166,166
+jeans,167,167
+mittens,168,168
+necklace,169,169
+pajamas,170,170
+pants,171,171
+scarf,172,172
+shirt,173,173
+shoe,174,174
+shorts,175,175
+slipper,176,176
+sneaker,177,177
+snowsuit,178,178
+sock,179,179
+sweater,180,180
+tights,181,181
+underpants,182,182
+zipper,183,183
+ankle,184,184
+arm,185,185
+belly button,186,186
+buttocks/bottom*,187,187
+cheek,188,188
+chin,189,189
+ear,190,190
+eye,191,191
+face,192,192
+foot,193,194
+finger,194,193
+hair,195,195
+hand,196,196
+head,197,197
+knee,198,198
+leg,199,199
+lips,200,200
+mouth,201,201
+nose,202,202
+owie/boo boo,203,203
+penis*,204,204
+shoulder,205,205
+tooth,206,208
+toe,207,206
+tongue,208,207
+tummy,209,209
+vagina*,210,210
+basket,211,211
+blanket,212,212
+bottle,213,213
+box,214,215
+bowl,215,214
+broom,216,216
+brush,217,217
+bucket,218,218
+camera,219,219
+can (object),220,220
+clock,221,221
+comb,222,222
+cup,223,223
+dish,224,224
+fork,225,225
+garbage,226,226
+glass,227,227
+glasses,228,228
+hammer,229,229
+jar,230,230
+keys,231,231
+knife,232,232
+lamp,233,233
+light,234,234
+medicine,235,235
+money,236,236
+mop,237,237
+nail,238,238
+napkin,239,239
+paper,240,240
+penny,241,241
+picture,242,242
+pillow,243,243
+plant,244,244
+plate,245,245
+purse,246,246
+radio,247,247
+scissors,248,248
+soap,249,249
+spoon,250,250
+tape,251,251
+telephone,252,252
+tissue/kleenex,253,253
+toothbrush,254,254
+towel,255,255
+trash,256,256
+tray,257,257
+vacuum,258,258
+walker,259,259
+watch (object),260,260
+basement,261,261
+bathroom,262,262
+bathtub,263,263
+bed,264,264
+bedroom,265,265
+bench,266,266
+chair,267,267
+closet,268,268
+couch,269,269
+crib,270,270
+door,271,271
+drawer,272,272
+dryer,273,273
+garage,274,274
+high chair,275,275
+kitchen,276,276
+living room,277,277
+oven,278,278
+play pen,279,279
+porch,280,280
+potty,281,281
+rocking chair,282,282
+refrigerator,283,283
+room,284,284
+shower,285,285
+sink,286,286
+sofa,287,287
+stairs,288,288
+stove,289,289
+table,290,290
+TV,291,291
+window,292,292
+washing machine,293,293
+backyard,294,294
+cloud,295,295
+flag,296,296
+flower,297,297
+garden,298,298
+grass,299,299
+hose,300,300
+ladder,301,301
+lawn mower,302,302
+moon,303,303
+pool,304,304
+rain,305,305
+rock,306,306
+roof,307,307
+sandbox,308,308
+shovel,309,309
+sidewalk,310,310
+sky,311,311
+slide (object),312,312
+snow,313,313
+snowman,314,314
+sprinkler,315,315
+star,316,316
+stick,317,317
+stone,318,318
+street,319,319
+sun,320,320
+swing (object),321,321
+tree,322,322
+water (not beverage),323,323
+wind,324,324
+spill,325,479
+beach,326,325
+camping,327,326
+church*,328,327
+circus,329,328
+country,330,329
+downtown,331,330
+farm,332,331
+gas station,333,332
+home,334,333
+house,335,334
+movie,336,335
+outside,337,336
+park,338,337
+party,339,338
+picnic,340,339
+playground,341,340
+school,342,341
+store,343,342
+woods,344,343
+work (place),345,344
+yard,346,345
+zoo,347,346
+aunt,348,347
+baby,349,348
+babysitter,350,349
+babysitter's name,351,350
+boy,352,351
+brother,353,352
+child,354,353
+clown,355,354
+cowboy,356,355
+daddy*,357,356
+doctor,358,357
+fireman,359,358
+friend,360,359
+girl,361,360
+grandma*,362,361
+grandpa*,363,362
+lady,364,363
+mailman,365,364
+man,366,365
+mommy*,367,366
+nurse,368,367
+child's own name,369,368
+people,370,369
+person,371,370
+pet's name,372,371
+police,373,372
+sister,374,373
+teacher,375,374
+uncle,376,375
+bath,377,376
+breakfast,378,377
+bye,379,378
+call (on phone),380,379
+dinner,381,380
+give me five!,382,381
+gonna get you!,383,382
+go potty,384,383
+hi,385,385
+hello,386,384
+lunch,387,386
+nap,388,387
+night night,389,388
+no,390,389
+pattycake,391,390
+peekaboo,392,391
+please,393,392
+shh/shush/hush,394,393
+shopping,395,394
+snack,396,395
+so big!,397,396
+thank you,398,397
+this little piggy,399,398
+turn around,400,399
+yes,401,400
+bite,402,401
+blow,403,402
+break,404,403
+bring,405,404
+build,406,405
+bump,407,406
+buy,408,407
+carry,409,408
+catch,410,409
+chase,411,410
+clap,412,411
+clean (action),413,412
+climb,414,413
+close,415,414
+cook,416,415
+cover,417,416
+cry,418,417
+cut,419,418
+dance,420,419
+draw,421,420
+drink (action),422,421
+drive,423,422
+drop,424,423
+dry (action),425,424
+dump,426,425
+eat,427,426
+fall,428,427
+feed,429,428
+find,430,429
+finish,431,430
+fit,432,431
+fix,433,432
+get,434,433
+give,435,434
+go,436,435
+hate,437,436
+have,438,437
+hear,439,438
+help,440,439
+hide,441,440
+hit,442,441
+hold,443,442
+hug,444,443
+hurry,445,444
+jump,446,445
+kick,447,446
+kiss,448,447
+knock,449,448
+lick,450,449
+like,451,450
+listen,452,451
+look,453,452
+love,454,453
+make,455,454
+open,456,455
+paint,457,456
+pick,458,457
+play,459,458
+pour,460,459
+pretend,461,460
+pull,462,461
+push,463,462
+put,464,463
+read,465,464
+ride,466,465
+rip,467,466
+run,468,467
+say,469,468
+see,470,469
+shake,471,470
+share,472,471
+show,473,472
+sing,474,473
+sit,475,474
+skate,476,475
+sleep,477,476
+slide (action),478,477
+smile,479,478
+splash,480,480
+stand,481,481
+stay,482,482
+stop,483,483
+sweep,484,484
+swim,485,485
+swing (action),486,486
+take,487,487
+talk,488,488
+taste,489,489
+tear,490,490
+think,491,491
+throw,492,492
+tickle,493,493
+touch,494,494
+wait,495,495
+wake,496,496
+walk,497,497
+wash,498,498
+watch (action),499,499
+wipe,500,500
+wish,501,501
+work (action),502,502
+write,503,503
+all gone,504,504
+asleep,505,505
+awake,506,506
+bad,507,507
+better,508,508
+big,509,509
+black,510,510
+blue,511,511
+broken,512,512
+brown,513,513
+careful,514,514
+clean (description),515,515
+cold,516,516
+cute,517,517
+dark,518,518
+dirty,519,519
+dry (description),520,520
+empty,521,521
+fast,522,522
+fine,523,523
+first,524,524
+full,525,525
+gentle,526,526
+good,527,527
+green,528,528
+happy,529,529
+hard,530,530
+heavy,531,531
+high,532,532
+hot,533,533
+hungry,534,534
+hurt,535,535
+last,536,536
+little (description),537,537
+long,538,538
+loud,539,539
+mad,540,540
+naughty,541,541
+new,542,542
+nice,543,543
+noisy,544,544
+old,545,545
+orange (description),546,546
+poor,547,547
+pretty,548,548
+quiet,549,549
+red,550,550
+sad,551,551
+scared,552,552
+sick,553,553
+sleepy,554,554
+slow,555,555
+soft,556,556
+sticky,557,557
+stuck,558,558
+thirsty,559,559
+tiny,560,560
+tired,561,561
+wet,562,562
+white,563,563
+windy,564,564
+yellow,565,565
+yucky,566,566
+after,567,567
+before,568,568
+day,569,569
+later,570,570
+morning,571,571
+night,572,572
+now,573,573
+time,574,574
+today,575,575
+tomorrow,576,576
+tonight,577,577
+yesterday,578,578
+he,579,579
+her,580,580
+hers,581,581
+him,582,582
+his,583,583
+I,584,584
+it,585,585
+me,586,586
+mine,587,587
+my,588,588
+myself,589,589
+our,590,590
+she,591,591
+that,592,592
+their,593,593
+them,594,594
+these,595,595
+they,596,596
+this,597,597
+those,598,598
+us,599,599
+we,600,600
+you,601,601
+your,602,602
+yourself,603,603
+how,604,604
+what,605,605
+when,606,606
+where,607,607
+which,608,608
+who,609,609
+why,610,610
+about,611,611
+above,612,612
+around,613,613
+at,614,614
+away,615,615
+back,616,616
+behind,617,617
+beside,618,618
+by,619,619
+down,620,620
+for,621,621
+here,622,622
+inside/in,623,623
+into,624,624
+next to,625,625
+of,626,626
+off,627,627
+on,628,628
+on top of,629,629
+out,630,630
+over,631,631
+there,632,632
+to,633,633
+under,634,634
+up,635,635
+with,636,636
+a,637,637
+all,638,638
+a lot,639,639
+an,640,640
+another,641,641
+any,642,642
+each,643,643
+every,644,644
+more,645,645
+much,646,646
+not,647,648
+none,648,647
+other,649,649
+same,650,650
+some,651,651
+the,652,652
+too,653,653
+am,654,654
+are,655,655
+be,656,656
+can (auxiliary),657,657
+could,658,658
+did/did ya,659,659
+do,660,660
+does,661,661
+don't,662,662
+gonna/going to,663,663
+gotta/got to,664,664
+hafta/have to,665,665
+is,666,666
+lemme/let me,667,667
+need/need to,668,668
+try/try to,669,669
+wanna/want to,670,670
+was,671,671
+were,672,672
+will,673,673
+would,674,674
+and,675,675
+because,676,676
+but,677,677
+if,678,678
+so,679,679
+then,680,680
