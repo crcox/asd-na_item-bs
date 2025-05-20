@@ -18,20 +18,27 @@ id_key <- bind_rows(
     .id = "group"
 )
 
+
+# !!! CRITICAL NOTE (19 May 2025) !!!
+# We realized that that problem identified on 16 May required rerunning several
+# models and fixing the indexes on the front end. We have standardized on
+# WordBank IDs.
+
+
 # Note: We are aware of 65 autistic children for whom data was not
 # collected/reported for the first 12 items on the CDI.
 #  * Models/VSOAs associated with cluster ID 29354226 included these 65 children
 #    when modeling these 12 items, which skewed the results.
 #  * Models/VSOAs were rerun for these 12 items, excluding these 65 children.
 #    These refit data are associated with cluster ID 29679346.
+
 models_to_load <- read_csv(
     "./item-id-label.csv",
-    col_names = c("num_item_id", "incorrect_label"),
+    col_names = c("num_item_id", "label"),
     col_types = list(col_integer(), col_character())
 ) |>
-    left_join(wb_to_ndar) |>
     mutate(
-        clust_id = if_else(num_item_id > 12, 29354226, 29679346), # replace data for first 12 items
+        clust_id = if_else(num_item_id %in% c(275, 283, 286, 303), 32136101, 32044924), # These four items ran out of memory and were rerun, which granted them a new cluster ID
         proc_id = num_item_id - 1
     ) |>
     relocate(clust_id, proc_id)
@@ -39,16 +46,16 @@ models_to_load <- read_csv(
 # Again, note that each file is distinguished by a cluster ID and a process ID.
 # This, coupled with appropriate documentation, provides information about when
 # and under conditions data were generated.
-read_vsoa_bsci <- function(clust_id, proc_id, num_item_id, incorrect_label) {
+read_vsoa_bsci <- function(clust_id, proc_id, num_item_id, label) {
     readRDS(file.path(
-        "results-20250507",
+        "results-20250519",
         "ci_bonf",
         "bs_ci",
-        sprintf("%d-%d-%03d-%s.rds", clust_id, proc_id, num_item_id, incorrect_label)
+        sprintf("%d-%d-%03d-%s.rds", clust_id, proc_id, num_item_id, label)
     ))
 }
 word_cis <- pmap(
-    models_to_load |> select(-word, -wb_item_id),
+    models_to_load,
     read_vsoa_bsci,
     .progress = TRUE
 )
@@ -83,20 +90,19 @@ x <- map(word_cis, function(x) {
 #) |> left_join(select(id_key, num_item_id, word), by = c("group", "ndar_item_id"))
 
 
-names(x) <- wb_to_ndar |>
-    arrange(ndar_item_id) |>
+names(x) <- models_to_load |>
+    left_join(select(meta, num_item_id, word), by = "num_item_id") |>
     pull(word)
 
-# In this pipeline, we make the switch from NDAR item IDs to WB item IDs being
-# the principle index. Note the `wb_item_id` becomes `num_item_id`.
-df_vsoa <- x[modeled_words$ndar_item_id] |>
+# In this pipeline, we would make the switch from NDAR item IDs to WB item IDs being
+# the principle index; `wb_item_id` becomes `num_item_id`.
+df_vsoa <- x |>
     bind_rows(.id = "word") |>
-    left_join(wb_to_ndar, by = "word") |>
-    rename(num_item_id = wb_item_id) |>
+    left_join(select(meta, word, num_item_id), by = "word") |>
     relocate(num_item_id) |>
     mutate(
         num_item_id = as.integer(num_item_id),
-        word = factor(num_item_id, modeled_words$wb_item_id, modeled_words$word),
+        word = factor(num_item_id, meta$num_item_id, meta$word),
         ci_type = factor(ci_type, c("basic", "bca", "percentile")),
         group = factor(variable, c("ASD-NA", "NA", "ASD"))
     ) |>
@@ -116,7 +122,7 @@ df_vsoa_diff <- df_vsoa |>
     select(-ci_l_ASD, -ci_u_ASD, -ci_l_NA, -ci_u_NA)
 
 
-saveRDS(df_vsoa, "data/vsoa-autistic-nonautistic-ndar-id-fix.rds")
-saveRDS(df_vsoa_diff, "data/vsoa-autistic-nonautistic-diff-ndar-id-fix.rds")
+saveRDS(df_vsoa, "data/vsoa-autistic-nonautistic-ndar-id-fix-remodel.rds")
+saveRDS(df_vsoa_diff, "data/vsoa-autistic-nonautistic-diff-ndar-id-fix-remodel.rds")
 
-write_csv(df_vsoa_diff, file = "data/vsoa-autistic-nonautistic-diff-ndar-id-fix.csv")
+write_csv(df_vsoa_diff, file = "data/vsoa-autistic-nonautistic-diff-ndar-id-fix-remodel.csv")
