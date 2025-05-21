@@ -25,6 +25,9 @@ id_key <- bind_rows(
 # WordBank IDs.
 
 
+# !!! CRITICAL NOTE (20 May 2025) !!!
+# Models were rerun, and data seems to be correct
+
 # Note: We are aware of 65 autistic children for whom data was not
 # collected/reported for the first 12 items on the CDI.
 #  * Models/VSOAs associated with cluster ID 29354226 included these 65 children
@@ -122,7 +125,7 @@ df_vsoa_diff <- df_vsoa |>
     select(-ci_l_ASD, -ci_u_ASD, -ci_l_NA, -ci_u_NA)
 
 
-saveRDS(df_vsoa, "data/vsoa-autistic-nonautistic-ndar-id-fix-remodel.rds")
-saveRDS(df_vsoa_diff, "data/vsoa-autistic-nonautistic-diff-ndar-id-fix-remodel.rds")
+saveRDS(df_vsoa, "data/vsoa-autistic-nonautistic-ndar-id-fix-remodel-v2.rds")
+saveRDS(df_vsoa_diff, "data/vsoa-autistic-nonautistic-diff-ndar-id-fix-remodel-v2.rds")
 
 write_csv(df_vsoa_diff, file = "data/vsoa-autistic-nonautistic-diff-ndar-id-fix-remodel-v2.csv")
