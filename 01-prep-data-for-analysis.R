@@ -38,7 +38,7 @@ models_to_load <- read_csv(
     col_types = list(col_integer(), col_character())
 ) |>
     mutate(
-        clust_id = if_else(num_item_id %in% c(275, 283, 286, 303), 32136101, 32044924), # These four items ran out of memory and were rerun, which granted them a new cluster ID
+        clust_id = 32251163,
         proc_id = num_item_id - 1
     ) |>
     relocate(clust_id, proc_id)
@@ -48,7 +48,7 @@ models_to_load <- read_csv(
 # and under conditions data were generated.
 read_vsoa_bsci <- function(clust_id, proc_id, num_item_id, label) {
     readRDS(file.path(
-        "results-20250519",
+        "results-20250520",
         "ci_bonf",
         "bs_ci",
         sprintf("%d-%d-%03d-%s.rds", clust_id, proc_id, num_item_id, label)
@@ -125,4 +125,4 @@ df_vsoa_diff <- df_vsoa |>
 saveRDS(df_vsoa, "data/vsoa-autistic-nonautistic-ndar-id-fix-remodel.rds")
 saveRDS(df_vsoa_diff, "data/vsoa-autistic-nonautistic-diff-ndar-id-fix-remodel.rds")
 
-write_csv(df_vsoa_diff, file = "data/vsoa-autistic-nonautistic-diff-ndar-id-fix-remodel.csv")
+write_csv(df_vsoa_diff, file = "data/vsoa-autistic-nonautistic-diff-ndar-id-fix-remodel-v2.csv")
